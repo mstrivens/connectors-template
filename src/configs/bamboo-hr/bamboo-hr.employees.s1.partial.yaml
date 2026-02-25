@@ -15,7 +15,7 @@ actions:
       - stepId: get_employees
         description: Fetch employees from BambooHR API
         stepFunction:
-          functionName: paginated_request
+          functionName: request
           parameters:
             url: /employees/directory
             method: get
@@ -23,13 +23,6 @@ actions:
               - name: Accept
                 value: application/json
                 in: headers
-            response:
-              dataKey: employees
-              nextKey: nextCursor
-              indexField: id
-            iterator:
-              key: cursor
-              in: query
 
       - stepId: map_employees_data
         description: Map to unified schema
@@ -41,7 +34,7 @@ actions:
               - targetFieldKey: id
                 expression: $.id
                 type: string
-            dataSource: $.steps.get_employees.output.data
+            dataSource: $.steps.get_employees.output.data.employees
 
       - stepId: typecast_employees_data
         description: Apply unified types
