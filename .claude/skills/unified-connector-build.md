@@ -253,28 +253,77 @@ fields:
 
 ### Step 5: Configure Unified Pagination
 
-**PRINCIPLE**: Never assume response structure. Always verify ALL paths with `--debug`.
+**PRINCIPLE**: Always implement cursor pagination for list endpoint unified actions. Never assume response structure - verify ALL paths with `--debug`.
 
 #### Action-Level Configuration
 
 ```yaml
 cursor:
   enabled: true
-  pageSize: 75  # Must be within API's max limit
+  pageSize: 50  # Must be within API's max limit
 ```
 
-#### Step-Level Configuration
+#### RECOMMENDED: Use `request` Function with Manual Cursor Handling
 
-Every pagination-related field must be verified against actual API response:
+**IMPORTANT**: Use the standard `request` function (not `paginated_request`) when you need dynamic inputs like `page_size` to pass through correctly. The `paginated_request` function can have issues with `$.inputs.*` resolving to `undefined`.
+
+```yaml
+inputs:
+  - name: page_size
+    description: Maximum number of items to return per page
+    type: number
+    in: query
+    required: false
+  - name: cursor
+    description: Pagination cursor for fetching the next page of results
+    type: string
+    in: query
+    required: false
+
+steps:
+  - stepId: get_data
+    description: Fetch data from API
+    stepFunction:
+      functionName: request
+      parameters:
+        url: /items
+        method: get
+        args:
+          # Use dual-condition pattern for defaults
+          - name: limit
+            value: $.inputs.page_size
+            in: query
+            condition: "{{present(inputs.page_size)}}"
+          - name: limit
+            value: 50
+            in: query
+            condition: "{{!present(inputs.page_size)}}"
+          # Pass cursor when present
+          - name: cursor
+            value: $.inputs.cursor
+            in: query
+            condition: "{{present(inputs.cursor)}}"
+
+result:
+  data: $.steps.typecast_data.output.data
+  next: $.steps.get_data.output.data.meta.nextCursor  # Return cursor for next page
+```
+
+**Key Pattern - Dual-Condition for Defaults**:
+- One arg with input value when present: `condition: "{{present(inputs.page_size)}}"`
+- Another arg with default when not present: `condition: "{{!present(inputs.page_size)}}"`
+
+#### Alternative: `paginated_request` Function
+
+Use `paginated_request` only when you don't need dynamic input parameters:
 
 ```yaml
 stepFunction:
-  functionName: paginated_request  # Or 'request' for non-paginated
+  functionName: paginated_request
   parameters:
     url: /v2/employees
     method: get
     response:
-      collection: true              # true for arrays, false for single record
       dataKey: data.employees       # EXACT path to data array
       nextKey: meta.pagination.next # EXACT path to cursor
       indexField: id                # Unique identifier in each record
@@ -289,13 +338,23 @@ Before testing, verify EVERY field:
 
 | Field | What to Verify | How to Verify |
 |-------|----------------|---------------|
+| `cursor.enabled` | Set to `true` for list actions | Action config |
 | `cursor.pageSize` | Within API's max limit | Check API documentation |
-| `response.collection` | Matches response type (array vs object) | `--debug` output |
-| `response.dataKey` | Exact path to data array | `--debug` output, count nesting levels |
-| `response.nextKey` | Exact path to cursor value | `--debug` output, check pagination object |
+| `inputs.page_size` | Optional input for user control | Action inputs |
+| `inputs.cursor` | Optional input for pagination | Action inputs |
+| `result.next` | Returns cursor for next page | Check result block |
+| `dataKey` path | Exact path to data array | `--debug` output |
+| `nextKey` path | Exact path to cursor value | `--debug` output |
+
+**When using `paginated_request`** (only if no dynamic inputs needed):
+
+| Field | What to Verify | How to Verify |
+|-------|----------------|---------------|
+| `response.dataKey` | Exact path to data array | `--debug` output |
+| `response.nextKey` | Exact path to cursor value | `--debug` output |
 | `response.indexField` | Field exists in every record | `--debug` output |
 | `iterator.key` | API's expected parameter name | API documentation |
-| `iterator.in` | Where API expects cursor | API documentation (query string? body?) |
+| `iterator.in` | Where API expects cursor | API documentation |
 
 #### Verification Process
 
@@ -324,11 +383,13 @@ stackone run --debug \
 
 | Mistake | Example | Fix |
 |---------|---------|-----|
+| Using `paginated_request` with dynamic inputs | `$.inputs.page_size` resolves to `undefined` | Use `request` function with dual-condition pattern |
+| Missing `next` in result block | Cursor not returned to caller | Add `next: $.steps.get_data.output.data.meta.nextCursor` to result |
+| Single condition for default values | Only passing input when present, no default | Use dual-condition: one arg when present, one when not |
 | Missing nesting in dataKey | `dataKey: employees` when response is `{data:{employees:[]}}` | `dataKey: data.employees` |
 | Wrong cursor field name | `nextKey: cursor` when API returns `next_cursor` | `nextKey: next_cursor` |
 | Wrong iterator parameter | `iterator.key: cursor` when API expects `page_token` | `iterator.key: page_token` |
-| Wrong iterator location | `iterator.in: query` when API expects body | `iterator.in: body` |
-| Wrong collection flag | `collection: true` for single-record endpoint | `collection: false` |
+| Not implementing pagination on list actions | List action without cursor support | Always add cursor pagination for list endpoints |
 
 ### Step 6: Build Connector Configuration
 

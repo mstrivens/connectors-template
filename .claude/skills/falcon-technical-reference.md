@@ -241,9 +241,55 @@ stepFunction:
 - Use JEXL (`{{...}}`) for `condition`.
 - **customErrors**: Optional remapping of provider error responses (e.g., 404 -> 400).
 
-### Paginated Request (Cursor-based)
+### Cursor Pagination with `request` (RECOMMENDED)
 
-Only for cursor-based pagination. Use `request` for others.
+**For list endpoints requiring dynamic inputs** (page_size, filters), use `request` with manual cursor handling:
+
+```yaml
+inputs:
+  - name: page_size
+    description: Maximum items per page
+    type: number
+    in: query
+    required: false
+  - name: cursor
+    description: Pagination cursor
+    type: string
+    in: query
+    required: false
+
+steps:
+  - stepId: fetch_data
+    stepFunction:
+      functionName: request
+      parameters:
+        url: /users
+        method: get
+        args:
+          # Dual-condition pattern for defaults
+          - name: limit
+            value: $.inputs.page_size
+            in: query
+            condition: "{{present(inputs.page_size)}}"
+          - name: limit
+            value: 50
+            in: query
+            condition: "{{!present(inputs.page_size)}}"
+          - name: cursor
+            value: $.inputs.cursor
+            in: query
+            condition: "{{present(inputs.cursor)}}"
+
+result:
+  data: $.steps.typecast_data.output.data
+  next: $.steps.fetch_data.output.data.meta.nextCursor
+```
+
+**CRITICAL**: Always implement cursor pagination for list endpoint unified actions.
+
+### Paginated Request (Alternative)
+
+Use `paginated_request` only when you don't need dynamic input parameters. Note that `$.inputs.*` may resolve to `undefined` in this function.
 
 ```yaml
 stepFunction:
@@ -563,29 +609,49 @@ refreshAuthentication:   # NOT refresh_authentication
 
 ## Pagination Configuration Verification
 
+**PRINCIPLE**: Always implement cursor pagination for list endpoint unified actions.
+
 When configuring pagination, verify ALL these fields against the actual API response:
 
 ### Action-Level
 ```yaml
 cursor:
   enabled: true       # Required for pagination
-  pageSize: 75        # Must be within API limits
+  pageSize: 50        # Must be within API limits
+
+inputs:
+  - name: page_size
+    description: Maximum items per page
+    type: number
+    in: query
+    required: false
+  - name: cursor
+    description: Pagination cursor for next page
+    type: string
+    in: query
+    required: false
 ```
 
-### Step-Level Response
+### Result Block (REQUIRED for cursor pagination)
+```yaml
+result:
+  data: $.steps.typecast_data.output.data
+  next: $.steps.fetch_data.output.data.meta.nextCursor  # Return cursor for next page
+```
+
+### Step-Level (when using `paginated_request`)
 ```yaml
 response:
-  collection: true        # true for arrays, false for single records
   dataKey: path.to.data   # Exact path to data array (verify with --debug)
   nextKey: path.to.cursor # Exact path to pagination cursor
   indexField: id          # Unique identifier field in records
-```
 
-### Step-Level Iterator (paginated_request only)
-```yaml
 iterator:
   key: cursor            # API's expected parameter name (check docs!)
   in: query              # Where API expects it (query, body, headers)
 ```
 
-**CRITICAL**: Never assume paths. Always verify with `stackone run --debug` to see actual response structure.
+**CRITICAL**:
+- Never assume paths. Always verify with `stackone run --debug` to see actual response structure.
+- Use `request` function (not `paginated_request`) when inputs need to pass through dynamically.
+- Use dual-condition pattern for defaults: `"{{present(inputs.field)}}"` and `"{{!present(inputs.field)}}"`
