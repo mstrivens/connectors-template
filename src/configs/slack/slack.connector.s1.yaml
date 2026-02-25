@@ -1,0 +1,37 @@
+StackOne: 1.0.0
+info:
+  title: Slack
+  key: slack
+  version: 1.0.0
+  assets:
+    icon: https://stackone-logos.com/api/slack/filled/png
+  description: Slack is a business communication platform offering messaging, file sharing, and integrations with various workplace tools.
+
+baseUrl: https://slack.com/api
+
+authentication:
+  - oauth2:
+      type: oauth2
+      label: OAuth 2.0
+      support:
+        link: https://api.slack.com/authentication/oauth-v2
+        description: Connect your Slack workspace using OAuth 2.0 authentication.
+      authorization:
+        type: bearer
+        token: $.credentials.accessToken
+      configFields:
+        - key: accessToken
+          label: Access Token
+          type: password
+          required: true
+          secret: true
+          placeholder: xoxb-xxxxxxxxxxxx-xxxxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxx
+          description: Bot or User OAuth access token from your Slack app.
+      environments:
+        - key: production
+          name: Production
+
+resources: https://api.slack.com/methods
+
+actions:
+  $ref: slack.messaging
