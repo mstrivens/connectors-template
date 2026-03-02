@@ -1,12 +1,18 @@
 ---
 name: Unified Connector Build
-trigger: unified connector|standardized connector|schema mapping|build unified|customer connector
+trigger: start unified build for
 description: Complete workflow for building unified/standardized connectors that map provider data to customer-defined schemas with consistent pagination and cursor handling.
 ---
 
 # Unified Connector Build Skill
 
-**When to use**: User asks to build a connector that maps provider data to a specific output schema, needs standardized responses across providers, or wants unified pagination/cursor handling.
+**How to trigger**: Use the specific phrase **"start unified build for [provider]"**
+
+Example: `start unified build for BambooHR`
+
+**This skill requires an explicit trigger phrase** to avoid accidental invocation. Do NOT trigger this skill for vague queries like "build connector" or "schema mapping" - those should go through the `/on-boarding` flow first.
+
+**When this skill applies**: User explicitly says "start unified build for [provider]" to build a connector that maps provider data to a specific output schema with standardized responses and unified pagination.
 
 **Key Difference from Custom Connectors**: Unified connectors transform provider-specific data into a standardized schema defined by the customer. Custom connectors return raw provider data.
 
