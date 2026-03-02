@@ -211,10 +211,16 @@ stackone run --connector <file> --account-id <id> --action-id <test-action> --pr
 ls .claude/skills/*schema*.md .claude/skills/schemas/*.md 2>/dev/null
 ```
 
-**If schema skill exists:**
+**If exactly one schema skill exists:**
 - Read the schema from the skill file
 - Confirm briefly: "Using your [X] schema skill"
 - Proceed directly to Step 5 (no questions needed)
+
+**If multiple schema skills exist:**
+- List all available schema skills
+- Ask the user which schema to use for this connector using `AskUserQuestion`
+- Example: "Found multiple schema skills: [HRIS Schema, ATS Schema, CRM Schema]. Which schema should this connector use?"
+- Only proceed after user selects one
 
 **If no schema skill exists:**
 
