@@ -5,7 +5,7 @@ import ora from 'ora';
 import path from 'path';
 import { buildFile } from './buildFile';
 
-const CONFIGS_DIR = path.resolve(__dirname, '../src/configs');
+const CONFIGS_DIR = path.resolve(__dirname, '../connectors');
 const DIST_DIR = path.resolve(__dirname, '../dist');
 
 const print = (text: string) => {

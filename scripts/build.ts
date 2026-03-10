@@ -5,7 +5,7 @@ import path from 'path';
 const errors: { file: string; error: unknown }[] = [];
 
 export const build = async () => {
-    const configsPath = path.resolve(__dirname, '../src/configs');
+    const configsPath = path.resolve(__dirname, '../connectors');
     const distPath = path.resolve(__dirname, '../dist');
 
     const entries = await fs.promises.readdir(configsPath, { withFileTypes: true });
