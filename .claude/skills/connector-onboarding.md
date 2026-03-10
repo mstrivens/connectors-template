@@ -19,6 +19,34 @@ description: Structured onboarding flow for building connectors. ONLY invoked vi
 
 **The onboarding flow is for users who want guided hand-holding through the entire process.** Most users just want to get started quickly.
 
+## Onboarding Flow Summary
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  PHASE 1: Connector Type                                    │
+│  Ask: Agentic Actions / Schema-Based / Skip Walkthrough     │
+├─────────────────────────────────────────────────────────────┤
+│                         │                                   │
+│         ┌───────────────┼───────────────┐                   │
+│         ▼               ▼               ▼                   │
+│    [Agentic]      [Schema-Based]    [Skip]                  │
+│         │               │               │                   │
+│         ▼               │               └──► Proceed        │
+│  PHASE 1.5 (REQUIRED)   │                   directly        │
+│  Ask: New / Extend      │                                   │
+│         │               │                                   │
+│    ┌────┴────┐          │                                   │
+│    ▼         ▼          ▼                                   │
+│  [New]   [Extend]   [Schema]                                │
+│    │         │          │                                   │
+│    ▼         ▼          ▼                                   │
+│  PHASE 2: Provider Details (for all paths)                  │
+│  Ask: Provider name, API version                            │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## Phase 1: Connector Type Selection
 
 **Always start by asking this question** using `AskUserQuestion`:
@@ -52,9 +80,11 @@ C) Skip Guided Walkthrough
 
 ---
 
-## Phase 1.5: Agentic Actions Sub-Selection
+## Phase 1.5: Agentic Actions Sub-Selection (REQUIRED)
 
-**If user selects "Agentic Actions Connector" in Phase 1**, ask this follow-up question using `AskUserQuestion`:
+**⚠️ MANDATORY**: If user selects "Agentic Actions Connector" in Phase 1, you MUST ask this follow-up question BEFORE asking about provider details.
+
+Use `AskUserQuestion` to ask:
 
 ```
 Are you creating a new connector or extending an existing one?
@@ -79,11 +109,15 @@ B) Extend Existing Connector
 | Agent assistance | Manual workflow | StackOne Agent guided |
 | Best for | New providers | Adding use cases |
 
+**After Phase 1.5**: Proceed to Phase 2 to get provider details.
+
 ---
 
 ## Phase 2: Provider Details
 
-After the user selects their connector type, ask:
+**When to trigger**: After completing Phase 1 (and Phase 1.5 if Agentic Actions was selected).
+
+Ask the user:
 
 1. **Provider name**: What provider/API are you building a connector for?
 2. **API version** (if applicable): What API version should we target?
@@ -122,7 +156,11 @@ If user selects **Skip Guided Walkthrough**:
 
 ## Path A: Agentic Actions Connector
 
-If user selects **Agentic Actions**, first ask whether they're creating a new connector or extending an existing one (see Phase 1.5).
+**⚠️ IMPORTANT**: If user selects **Agentic Actions** in Phase 1:
+
+1. **FIRST**: Ask the Phase 1.5 question (New vs Extend) - DO NOT SKIP THIS
+2. **THEN**: Ask Phase 2 questions (Provider name, API version)
+3. **FINALLY**: Follow Path A1 or A2 based on their selection
 
 ---
 
