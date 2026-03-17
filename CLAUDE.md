@@ -889,8 +889,9 @@ For embedding dynamic values within strings:
 
 **3. JEXL Expressions (`'{{...}}'`)**
 
-**ONLY USE JEXL EXPRESSIONS DEFINED IN THIS PACKAGE:**
-https://github.com/StackOneHQ/connect/tree/main/packages/expressions
+**ONLY USE JEXL EXPRESSIONS DEFINED IN THE EXPRESSIONS PACKAGE.**
+
+📖 **Full reference (operators, functions, examples):** `node_modules/@stackone/expressions/README.md`
 
 For conditional logic, transformations, complex expressions (wrap in single quotes):
 

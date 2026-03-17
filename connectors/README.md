@@ -346,7 +346,7 @@ actions:
 NOTE: `fieldConfigs` are NOT required when building non-unified connectors!
 
 - `fieldConfigs` - Mapping of the provider response fields to StackOne unified response.
-  - `expression` - The json path selector on the provider response. Also supports [JEXL expressions](https://github.com/StackOneHQ/connect/tree/main/packages/expressions)
+  - `expression` - The json path selector on the provider response. Also supports JEXL expressions (see `node_modules/@stackone/expressions/README.md` for full reference)
   - `enumMapper` - Two ways of mapping to known values:
     - Can use a built-in matcher to take the evaluated `expression` to a standard value.
     - Can use a `matchExpression` condition to map a custom value.
@@ -739,7 +739,7 @@ value: '{{$.count > 0 ? $.count : "none"}}'
 - Mathematical operations
 - Ternary operators
 
-For more details on JEXL expressions, see the [expressions package documentation](https://github.com/StackOneHQ/connect/tree/main/packages/expressions).
+For the complete JEXL reference (all operators, built-in functions, and examples), see `node_modules/@stackone/expressions/README.md`. This stays in sync with your installed package version.
 
 ## Common Use Cases
 
