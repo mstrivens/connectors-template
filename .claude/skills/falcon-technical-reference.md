@@ -461,6 +461,8 @@ Use for embedding values in strings.
 
 Use for logic, conditions, and transformations.
 
+📖 **Full reference:** `node_modules/@stackone/expressions/README.md` (all operators, functions, examples)
+
 - Conditions: `condition: '{{present(inputs.email)}}'`
 - Match Expressions: `matchExpression: '{{$.accountType == "admin"}}'`
 - Transformations: `value: '{{inputs.name.toUpperCase()}}'`
