@@ -1,0 +1,454 @@
+- actionId: list_employees
+  label: List Employees
+  categories:
+    - hris
+  actionType: custom
+  description: Returns a list of employees from BambooHR using the employee directory endpoint.
+  details: Lists all employees from the BambooHR directory. Returns employee data including names, contact information, job title, department, and employment status. For full employee detail including date of birth, address, and custom fields, use get_employee.
+  resources: https://documentation.bamboohr.com/reference/get-employees-list
+  steps:
+    - stepId: get_employees
+      description: Fetch all employees from BambooHR employee directory
+      stepFunction:
+        functionName: request
+        parameters:
+          url: /employees/directory
+          method: get
+          args:
+            - name: Accept
+              value: application/json
+              in: headers
+  result:
+    data: $.steps.get_employees.output.data
+
+- actionId: get_employee
+  label: Get Employee
+  categories:
+    - hris
+  actionType: custom
+  description: Returns a single employee record by ID with the requested fields.
+  details: Retrieves detailed information for a specific employee from BambooHR. Uses the fields query parameter to request specific BambooHR field names. Returns raw BambooHR field names in the response.
+  resources: https://documentation.bamboohr.com/reference/get-employee
+  inputs:
+    - name: id
+      description: The BambooHR employee ID
+      type: string
+      in: path
+      required: true
+    - name: fields
+      description: Comma-separated list of BambooHR field names to return (e.g. firstName,lastName,jobTitle,department,workEmail)
+      type: string
+      in: query
+      required: false
+  steps:
+    - stepId: fetch_employee
+      description: Fetch employee by ID from BambooHR
+      stepFunction:
+        functionName: request
+        parameters:
+          url: /employees/${inputs.id}
+          method: get
+          args:
+            - name: Accept
+              value: application/json
+              in: headers
+            - name: fields
+              value: $.inputs.fields
+              in: query
+              condition: '{{present(inputs.fields)}}'
+  result:
+    data: $.steps.fetch_employee.output.data
+
+- actionId: create_employee
+  label: Create Employee
+  categories:
+    - hris
+  actionType: custom
+  description: Creates a new employee record in BambooHR.
+  details: Creates a new employee with the provided fields. firstName and lastName are required. All other fields are optional. Returns the Location header with the new employee URL.
+  resources: https://documentation.bamboohr.com/reference/add-employee-1
+  inputs:
+    - name: firstName
+      description: Employee first name
+      type: string
+      in: body
+      required: true
+    - name: lastName
+      description: Employee last name
+      type: string
+      in: body
+      required: true
+    - name: jobTitle
+      description: Employee job title
+      type: string
+      in: body
+      required: false
+    - name: department
+      description: Employee department name
+      type: string
+      in: body
+      required: false
+    - name: workEmail
+      description: Employee work email address
+      type: string
+      in: body
+      required: false
+    - name: homeEmail
+      description: Employee personal email address
+      type: string
+      in: body
+      required: false
+    - name: mobilePhone
+      description: Employee mobile phone number
+      type: string
+      in: body
+      required: false
+    - name: hireDate
+      description: Employee hire date in YYYY-MM-DD format
+      type: string
+      in: body
+      required: false
+    - name: dateOfBirth
+      description: Employee date of birth in YYYY-MM-DD format
+      type: string
+      in: body
+      required: false
+    - name: employeeNumber
+      description: Assigned employee number
+      type: string
+      in: body
+      required: false
+    - name: maritalStatus
+      description: Employee marital status
+      type: string
+      in: body
+      required: false
+    - name: address1
+      description: First line of home address
+      type: string
+      in: body
+      required: false
+    - name: address2
+      description: Second line of home address
+      type: string
+      in: body
+      required: false
+    - name: city
+      description: Home address city
+      type: string
+      in: body
+      required: false
+    - name: zipCode
+      description: Home address ZIP or postal code
+      type: string
+      in: body
+      required: false
+    - name: country
+      description: Home address country
+      type: string
+      in: body
+      required: false
+  steps:
+    - stepId: create_employee
+      description: Create new employee record in BambooHR
+      stepFunction:
+        functionName: request
+        parameters:
+          url: /employees
+          method: post
+          args:
+            - name: Accept
+              value: application/json
+              in: headers
+            - name: Content-Type
+              value: application/json
+              in: headers
+            - name: firstName
+              value: $.inputs.firstName
+              in: body
+            - name: lastName
+              value: $.inputs.lastName
+              in: body
+            - name: jobTitle
+              value: $.inputs.jobTitle
+              in: body
+              condition: '{{present(inputs.jobTitle)}}'
+            - name: department
+              value: $.inputs.department
+              in: body
+              condition: '{{present(inputs.department)}}'
+            - name: workEmail
+              value: $.inputs.workEmail
+              in: body
+              condition: '{{present(inputs.workEmail)}}'
+            - name: homeEmail
+              value: $.inputs.homeEmail
+              in: body
+              condition: '{{present(inputs.homeEmail)}}'
+            - name: mobilePhone
+              value: $.inputs.mobilePhone
+              in: body
+              condition: '{{present(inputs.mobilePhone)}}'
+            - name: hireDate
+              value: $.inputs.hireDate
+              in: body
+              condition: '{{present(inputs.hireDate)}}'
+            - name: dateOfBirth
+              value: $.inputs.dateOfBirth
+              in: body
+              condition: '{{present(inputs.dateOfBirth)}}'
+            - name: employeeNumber
+              value: $.inputs.employeeNumber
+              in: body
+              condition: '{{present(inputs.employeeNumber)}}'
+            - name: maritalStatus
+              value: $.inputs.maritalStatus
+              in: body
+              condition: '{{present(inputs.maritalStatus)}}'
+            - name: address1
+              value: $.inputs.address1
+              in: body
+              condition: '{{present(inputs.address1)}}'
+            - name: address2
+              value: $.inputs.address2
+              in: body
+              condition: '{{present(inputs.address2)}}'
+            - name: city
+              value: $.inputs.city
+              in: body
+              condition: '{{present(inputs.city)}}'
+            - name: zipCode
+              value: $.inputs.zipCode
+              in: body
+              condition: '{{present(inputs.zipCode)}}'
+            - name: country
+              value: $.inputs.country
+              in: body
+              condition: '{{present(inputs.country)}}'
+  result:
+    data: $.steps.create_employee.output.data
+
+- actionId: update_employee
+  label: Update Employee
+  categories:
+    - hris
+  actionType: custom
+  description: Updates an existing employee record in BambooHR.
+  details: Updates one or more fields on an existing employee. Only provided fields will be sent. BambooHR uses POST (not PATCH) for employee field updates.
+  resources: https://documentation.bamboohr.com/reference/update-employee
+  inputs:
+    - name: id
+      description: The BambooHR employee ID
+      type: string
+      in: path
+      required: true
+    - name: firstName
+      description: Employee first name
+      type: string
+      in: body
+      required: false
+    - name: lastName
+      description: Employee last name
+      type: string
+      in: body
+      required: false
+    - name: jobTitle
+      description: Employee job title
+      type: string
+      in: body
+      required: false
+    - name: department
+      description: Employee department name
+      type: string
+      in: body
+      required: false
+    - name: workEmail
+      description: Employee work email address
+      type: string
+      in: body
+      required: false
+    - name: homeEmail
+      description: Employee personal email address
+      type: string
+      in: body
+      required: false
+    - name: mobilePhone
+      description: Employee mobile phone number
+      type: string
+      in: body
+      required: false
+    - name: hireDate
+      description: Employee hire date in YYYY-MM-DD format
+      type: string
+      in: body
+      required: false
+    - name: terminationDate
+      description: Employee termination date in YYYY-MM-DD format
+      type: string
+      in: body
+      required: false
+    - name: dateOfBirth
+      description: Employee date of birth in YYYY-MM-DD format
+      type: string
+      in: body
+      required: false
+    - name: employeeNumber
+      description: Assigned employee number
+      type: string
+      in: body
+      required: false
+    - name: maritalStatus
+      description: Employee marital status
+      type: string
+      in: body
+      required: false
+    - name: address1
+      description: First line of home address
+      type: string
+      in: body
+      required: false
+    - name: address2
+      description: Second line of home address
+      type: string
+      in: body
+      required: false
+    - name: city
+      description: Home address city
+      type: string
+      in: body
+      required: false
+    - name: zipCode
+      description: Home address ZIP or postal code
+      type: string
+      in: body
+      required: false
+    - name: country
+      description: Home address country
+      type: string
+      in: body
+      required: false
+  steps:
+    - stepId: update_employee
+      description: Update employee record fields in BambooHR
+      stepFunction:
+        functionName: request
+        parameters:
+          url: /employees/${inputs.id}
+          method: post
+          args:
+            - name: Accept
+              value: application/json
+              in: headers
+            - name: Content-Type
+              value: application/json
+              in: headers
+            - name: firstName
+              value: $.inputs.firstName
+              in: body
+              condition: '{{present(inputs.firstName)}}'
+            - name: lastName
+              value: $.inputs.lastName
+              in: body
+              condition: '{{present(inputs.lastName)}}'
+            - name: jobTitle
+              value: $.inputs.jobTitle
+              in: body
+              condition: '{{present(inputs.jobTitle)}}'
+            - name: department
+              value: $.inputs.department
+              in: body
+              condition: '{{present(inputs.department)}}'
+            - name: workEmail
+              value: $.inputs.workEmail
+              in: body
+              condition: '{{present(inputs.workEmail)}}'
+            - name: homeEmail
+              value: $.inputs.homeEmail
+              in: body
+              condition: '{{present(inputs.homeEmail)}}'
+            - name: mobilePhone
+              value: $.inputs.mobilePhone
+              in: body
+              condition: '{{present(inputs.mobilePhone)}}'
+            - name: hireDate
+              value: $.inputs.hireDate
+              in: body
+              condition: '{{present(inputs.hireDate)}}'
+            - name: terminationDate
+              value: $.inputs.terminationDate
+              in: body
+              condition: '{{present(inputs.terminationDate)}}'
+            - name: dateOfBirth
+              value: $.inputs.dateOfBirth
+              in: body
+              condition: '{{present(inputs.dateOfBirth)}}'
+            - name: employeeNumber
+              value: $.inputs.employeeNumber
+              in: body
+              condition: '{{present(inputs.employeeNumber)}}'
+            - name: maritalStatus
+              value: $.inputs.maritalStatus
+              in: body
+              condition: '{{present(inputs.maritalStatus)}}'
+            - name: address1
+              value: $.inputs.address1
+              in: body
+              condition: '{{present(inputs.address1)}}'
+            - name: address2
+              value: $.inputs.address2
+              in: body
+              condition: '{{present(inputs.address2)}}'
+            - name: city
+              value: $.inputs.city
+              in: body
+              condition: '{{present(inputs.city)}}'
+            - name: zipCode
+              value: $.inputs.zipCode
+              in: body
+              condition: '{{present(inputs.zipCode)}}'
+            - name: country
+              value: $.inputs.country
+              in: body
+              condition: '{{present(inputs.country)}}'
+  result:
+    data: $.steps.update_employee.output.data
+
+- actionId: terminate_employee
+  label: Terminate Employee
+  categories:
+    - hris
+  actionType: custom
+  description: Terminates an employee in BambooHR by setting their termination date.
+  details: BambooHR does not support hard deletion of employee records. This action terminates an employee by setting their terminationDate field. The employee record remains accessible in the system after termination.
+  resources: https://documentation.bamboohr.com/reference/update-employee
+  inputs:
+    - name: id
+      description: The BambooHR employee ID
+      type: string
+      in: path
+      required: true
+    - name: terminationDate
+      description: The termination date in YYYY-MM-DD format
+      type: string
+      in: body
+      required: true
+  steps:
+    - stepId: terminate_employee
+      description: Set termination date on employee record in BambooHR
+      stepFunction:
+        functionName: request
+        parameters:
+          url: /employees/${inputs.id}
+          method: post
+          args:
+            - name: Accept
+              value: application/json
+              in: headers
+            - name: Content-Type
+              value: application/json
+              in: headers
+            - name: terminationDate
+              value: $.inputs.terminationDate
+              in: body
+  result:
+    data: $.steps.terminate_employee.output.data
